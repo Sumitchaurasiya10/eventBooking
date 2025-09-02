@@ -22,17 +22,18 @@ import {
   editEvent, 
   removeEvent, 
   upload,
-  uploadImage // 👈 import new controller
+  uploadImage
 } from "../controllers/eventController.js";
 import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// Public routes
+// ================== Public routes ==================
 router.get("/", getEvents);
 router.get("/:id", getEventDetails);
 
-// Admin only
+// ================== Admin only routes ==================
+
 // 🔹 Add event with optional image
 router.post("/", protect, adminOnly, upload.single("img"), addEvent);
 
@@ -42,7 +43,7 @@ router.put("/:id", protect, adminOnly, upload.single("img"), editEvent);
 // 🔹 Delete event
 router.delete("/:id", protect, adminOnly, removeEvent);
 
-// 🔹 Image upload only (for admin dashboard)
-router.post("/upload", protect, adminOnly, upload.single("image"), uploadImage);
+// 🔹 Separate image upload API (for admin dashboard use only)
+router.post("/upload", protect, adminOnly, upload.single("img"), uploadImage);
 
 export default router;

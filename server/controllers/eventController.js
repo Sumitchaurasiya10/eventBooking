@@ -148,9 +148,9 @@
 // };
 
 
-
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import {
   getAllEvents,
   getEventById,
@@ -268,6 +268,15 @@ export const editEvent = async (req, res) => {
     let img_url = req.body.img_url;
 
     if (req.file) {
+      // delete old file if exists
+      const oldEvent = await getEventById(req.params.id);
+      if (oldEvent && oldEvent.img_url && oldEvent.img_url.startsWith("/uploads/")) {
+        const oldPath = `.${oldEvent.img_url}`;
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+
       img_url = `/uploads/${req.file.filename}`;
     }
 
@@ -293,6 +302,15 @@ export const editEvent = async (req, res) => {
 // Delete event
 export const removeEvent = async (req, res) => {
   try {
+    const oldEvent = await getEventById(req.params.id);
+
+    if (oldEvent && oldEvent.img_url && oldEvent.img_url.startsWith("/uploads/")) {
+      const oldPath = `.${oldEvent.img_url}`;
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
     await deleteEvent(req.params.id);
     res.json({ message: "Event deleted" });
   } catch (err) {

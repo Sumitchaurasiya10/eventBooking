@@ -93,16 +93,26 @@
 
 
 
-
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Calendar, Ticket, Users } from "lucide-react";
+import axios from "axios";
 
 export default function LandingPage() {
-  const recentEvents = [
-    { id: 1, title: "Tech Conference 2025", date: "Sep 10, 2025", location: "Bangalore" },
-    { id: 2, title: "Music Fest Live", date: "Sep 15, 2025", location: "Mumbai" },
-    { id: 3, title: "Startup Meetup", date: "Sep 22, 2025", location: "Delhi" },
-  ];
+  const [recentEvents, setRecentEvents] = useState([]);
+
+  // Fetch events from API when component mounts
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/events");
+        setRecentEvents(res.data); // assuming backend returns an array
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+      }
+    };
+    fetchEvents();
+  }, []);
 
   return (
     <div className="relative bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white scroll-smooth">
@@ -154,23 +164,27 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-10">🎟️ Recent Events</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {recentEvents.map((event) => (
-              <div
-                key={event.id}
-                className="p-6 rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md 
-                           hover:scale-105 hover:shadow-2xl transition duration-300 cursor-pointer"
-              >
-                <h3 className="text-xl font-semibold mb-2">{event.title}</h3>
-                <p className="text-sm text-gray-200">{event.date}</p>
-                <p className="text-sm text-gray-200">{event.location}</p>
-                <Link
-                  to={`/events/${event.id}`}
-                  className="inline-block mt-4 text-pink-300 font-semibold hover:text-pink-400 transition"
+            {recentEvents.length > 0 ? (
+              recentEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="p-6 rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md 
+                             hover:scale-105 hover:shadow-2xl transition duration-300 cursor-pointer"
                 >
-                  View Details →
-                </Link>
-              </div>
-            ))}
+                  <h3 className="text-xl font-semibold mb-2">{event.title}</h3>
+                  <p className="text-sm text-gray-200">{event.date}</p>
+                  <p className="text-sm text-gray-200">{event.location}</p>
+                  <Link
+                    to={`/events/${event.id}`}
+                    className="inline-block mt-4 text-pink-300 font-semibold hover:text-pink-400 transition"
+                  >
+                    View Details →
+                  </Link>
+                </div>
+              ))
+            ) : (
+              <p className="text-center text-gray-200">No events found.</p>
+            )}
           </div>
         </div>
       </section>

@@ -126,17 +126,22 @@
 // }
 
 
+
+
+
 import { useEffect, useState } from "react";
 import API from "../api/api";
 import Loader from "../components/common/Loader";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function EventsList() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [loc, setLoc] = useState("");
+  const [imageErrors, setImageErrors] = useState(new Set());
+  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -151,6 +156,10 @@ export default function EventsList() {
     })();
   }, []);
 
+  const handleImageError = (eventId) => {
+    setImageErrors(prev => new Set([...prev, eventId]));
+  };
+
   const filtered = events.filter(
     (e) =>
       (e.title?.toLowerCase().includes(q.toLowerCase()) ||
@@ -162,6 +171,25 @@ export default function EventsList() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-800 to-purple-900 max-w-7xl mx-auto p-6">
+      {/* Back Arrow Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ scale: 1.1, x: -5 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => navigate('/')}
+        className="mb-8 flex items-center gap-2 px-4 py-2 rounded-xl 
+                   bg-gradient-to-r from-purple-600/50 to-pink-600/50 
+                   backdrop-blur-lg border border-white/20 
+                   hover:from-purple-600/70 hover:to-pink-600/70 
+                   transition-all duration-300 shadow-lg text-white"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Home
+      </motion.button>
+
       {/* Title */}
       <h1 className="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 mb-10 drop-shadow-lg">
         Explore Events 🎉
@@ -206,13 +234,23 @@ export default function EventsList() {
               whileTap={{ scale: 0.97 }}
               className="rounded-2xl transform-gpu perspective-1000 transition-all duration-500 bg-white/10 shadow-xl backdrop-blur-lg overflow-hidden"
             >
-              {/* ✅ Show Event Image */}
-              {ev.img_url && (
+              {/* Event Image */}
+              {ev.img_url && !imageErrors.has(ev.id) ? (
                 <img
                   src={ev.img_url}
                   alt={ev.title}
                   className="w-full h-48 object-cover"
+                  onError={() => handleImageError(ev.id)}
                 />
+              ) : (
+                <div className="w-full h-48 bg-gradient-to-br from-purple-600/50 to-pink-600/50 flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <svg className="w-12 h-12 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-xs opacity-80">Event Image</p>
+                  </div>
+                </div>
               )}
 
               {/* Card Content */}

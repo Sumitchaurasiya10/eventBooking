@@ -466,6 +466,7 @@ export default function EventDetails() {
   const { auth } = useAuth();
   const { setLastBooking } = useContext(BookingContext);
   const nav = useNavigate();
+  const [imageError, setImageError] = useState(false);
 
   const [ticketPopup, setTicketPopup] = useState(null);
 
@@ -511,11 +512,34 @@ export default function EventDetails() {
     nav("/bookings");
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   if (loading) return <Loader />;
-  if (!event) return <div className="p-6">Event not found.</div>;
+  if (!event) return <div className="p-6 text-white">Event not found.</div>;
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-purple-900 via-pink-800 to-purple-900 max-w-7xl mx-auto px-6 pt-28 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-pink-800 to-purple-900 max-w-7xl mx-auto p-6">
+      {/* Back Arrow Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ scale: 1.1, x: -5 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => nav('/events')}
+        className="mb-8 flex items-center gap-2 px-4 py-2 rounded-xl 
+                   bg-gradient-to-r from-purple-600/50 to-pink-600/50 
+                   backdrop-blur-lg border border-white/20 
+                   hover:from-purple-600/70 hover:to-pink-600/70 
+                   transition-all duration-300 shadow-lg text-white"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Events
+      </motion.button>
+
       {/* 🎟 Ticket Popup */}
       <AnimatePresence>
         {ticketPopup && (
@@ -571,27 +595,49 @@ export default function EventDetails() {
       </AnimatePresence>
 
       {/* Event + Booking Form */}
-      <div className="grid md:grid-cols-2 gap-10">
-        {/* 🎤 Event Details (without image) */}
+      <div className="grid md:grid-cols-2 gap-10 mt-10">
+        {/* 🎤 Event Details WITH image */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.03, rotateY: 5, rotateX: -3 }}
+          whileHover={{ 
+            scale: 1.07,
+            rotateX: 8,
+            rotateY: -8,
+            boxShadow: "0px 20px 40px rgba(255, 0, 150, 0.3), 0px 10px 20px rgba(0,0,0,0.4)"
+          }}
           transition={{ type: "spring", stiffness: 180, damping: 12 }}
-          className="relative bg-gradient-to-br from-purple-600/80 to-pink-600/80 
-                     p-8 rounded-2xl shadow-xl border border-pink-300/40 
-                     backdrop-blur-lg group overflow-hidden"
+          className="rounded-2xl transform-gpu perspective-1000 transition-all duration-500 bg-white/10 shadow-xl backdrop-blur-lg overflow-hidden"
         >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-400/20 to-purple-400/20 
-                          opacity-0 group-hover:opacity-100 transition duration-500 blur-2xl"></div>
+          {/* 🖼 Event Image */}
+          {event.img_url && !imageError ? (
+            <img
+              src={event.img_url}
+              alt={event.title}
+              className="w-full h-60 object-cover"
+              onError={handleImageError}
+            />
+          ) : (
+            <div className="w-full h-60 bg-gradient-to-br from-purple-600/50 to-pink-600/50 flex items-center justify-center">
+              <div className="text-center text-white">
+                <svg className="w-16 h-16 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm opacity-80">Event Image</p>
+              </div>
+            </div>
+          )}
 
-          <h2 className="text-3xl font-bold text-white drop-shadow-lg">{event.title}</h2>
-          <p className="text-pink-100 mt-3">{event.description}</p>
-          <div className="mt-6 space-y-2 text-pink-50">
-            <div><b>Date:</b> {new Date(event.date).toLocaleString()}</div>
-            <div><b>Location:</b> {event.location}</div>
-            <div><b>Price:</b> ₹{event.price}</div>
-            <div><b>Available Seats:</b> {event.available_seats}</div>
+          {/* Card Content */}
+          <div className="p-8 text-white">
+            <h2 className="text-3xl font-bold text-white drop-shadow-lg mb-3">{event.title}</h2>
+            <p className="text-gray-300 mb-4">{event.description}</p>
+            <div className="space-y-2 text-gray-200">
+              <div><b>Date:</b> {new Date(event.date).toLocaleString()}</div>
+              <div><b>Location:</b> {event.location}</div>
+              <div><b>Price:</b> ₹{event.price}</div>
+              <div><b>Available Seats:</b> {event.available_seats}</div>
+            </div>
           </div>
         </motion.div>
 
@@ -599,24 +645,25 @@ export default function EventDetails() {
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.03, rotateY: -5, rotateX: 3 }}
+          whileHover={{ 
+            scale: 1.07,
+            rotateX: 8,
+            rotateY: 8,
+            boxShadow: "0px 20px 40px rgba(255, 0, 150, 0.3), 0px 10px 20px rgba(0,0,0,0.4)"
+          }}
           transition={{ type: "spring", stiffness: 180, damping: 12 }}
-          className="relative bg-gradient-to-br from-pink-700/80 to-purple-700/80 
-                     border border-pink-400/50 rounded-2xl p-8 shadow-2xl 
-                     backdrop-blur-lg group overflow-hidden"
+          className="rounded-2xl transform-gpu perspective-1000 transition-all duration-500 bg-white/10 shadow-xl backdrop-blur-lg overflow-hidden"
         >
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 
-                          opacity-0 group-hover:opacity-100 transition duration-500 blur-2xl"></div>
-
-          <h3 className="text-xl font-semibold text-white mb-4">🎟 Book Your Tickets</h3>
-
-          <BookingForm eventId={event.id} price={event.price} onSubmit={handleBook} />
+          <div className="p-8">
+            <h3 className="text-xl font-semibold text-white mb-4">🎟 Book Your Tickets</h3>
+            <BookingForm eventId={event.id} price={event.price} onSubmit={handleBook} />
+          </div>
         </motion.div>
       </div>
 
       {/* 🎉 Event Highlights Section */}
       <div className="mt-20">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-white mb-12 drop-shadow-lg">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 mb-12 drop-shadow-lg">
           ✨ Event Highlights
         </h2>
 
@@ -628,16 +675,21 @@ export default function EventDetails() {
           ].map((item, i) => (
             <motion.div
               key={i}
-              whileHover={{ rotateY: 15, rotateX: -8, scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
-              className="relative bg-gradient-to-br from-purple-600/50 to-pink-600/50 
-                         backdrop-blur-xl border border-white/20 rounded-2xl 
-                         p-6 sm:p-8 shadow-2xl cursor-pointer group"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1, duration: 0.6 }}
+              whileHover={{
+                scale: 1.07,
+                rotateX: 8,
+                rotateY: -8,
+                boxShadow: "0px 20px 40px rgba(255, 0, 150, 0.3), 0px 10px 20px rgba(0,0,0,0.4)"
+              }}
+              className="rounded-2xl transform-gpu perspective-1000 transition-all duration-500 bg-white/10 shadow-xl backdrop-blur-lg overflow-hidden cursor-pointer"
             >
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-pink-400/20 to-purple-500/20 
-                              opacity-0 group-hover:opacity-100 transition duration-500 blur-xl"></div>
-              <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">{item.title}</h3>
-              <p className="text-sm sm:text-base text-pink-100 leading-relaxed">{item.desc}</p>
+              <div className="p-6 sm:p-8">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">{item.title}</h3>
+                <p className="text-sm sm:text-base text-gray-200 leading-relaxed">{item.desc}</p>
+              </div>
             </motion.div>
           ))}
         </div>
